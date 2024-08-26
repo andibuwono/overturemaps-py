@@ -22,29 +22,30 @@ $ overturemaps download --bbox=-71.068,42.353,-71.058,42.363 -f geojson --type=b
 
 ## Usage
 
+#### `get_releases`
+The `get_releases` command lists all available releases of the Overture Maps dataset, with the latest release clearly marked. This allows users to see which versions of the dataset are available and decide which one to download.
+
+Command-line usage:
+* `overturemaps get_releases`: Displays a list of all available releases with the latest release highlighted.
+
+---
+
 #### `download`
-There is currently one option to the `overturemaps` utility, `download`. It will download Overture Maps data
-with an optional bounding box into the specified file format. When specifying a bounding box,
-only the minimum data is transferred. The result is streamed out and can handle arbitrarily
-large bounding boxes.
+The `download` command in the `overturemaps` utility downloads Overture Maps data with an optional bounding box into the specified file format. It now also supports specifying a particular release version, allowing you to download data from a specific release. If no release is specified, the latest release is used by default. The command streams the result out and can handle arbitrarily large bounding boxes.
 
 Command-line options:
-* `--bbox` (optional): west, south, east, north longitude and latitude coordinates. When omitted the
-entire dataset for the specified type will be downloaded
-* `-f` (required: one of "geojson", "geojsonseq", "geoparquet"): output format
-* `--output`/`-o` (optional): Location of output file. When omitted output will be written to stdout.
-* `--type`/`-t` (required): The Overture map data type to be downloaded. Examples of types are `building`
-for building footprints, `place` for POI places data, etc. Run `overturemaps download --help` for the
-complete list of allowed types
+* `--bbox` (optional): west, south, east, north longitude and latitude coordinates. When omitted, the entire dataset for the specified type will be downloaded.
+* `-f` (required: one of "geojson", "geojsonseq", "geoparquet"): Output format.
+* `--output`/`-o` (optional): Location of output file. When omitted, output will be written to stdout. If a release is specified, the release version will be included in the filename.
+* `--type`/`-t` (required): The Overture map data type to be downloaded. Examples of types are `building` for building footprints, `place` for POI places data, etc. Run `overturemaps download --help` for the complete list of allowed types.
+* `--release`/`-r` (optional): The release version to download. When omitted, the latest release is used. You can use the `get_releases` command to view available releases.
+* `--include-release-in-filename/--no-include-release-in-filename` (optional, default: `--include-release-in-filename`): Specifies whether to include the release version in the output filename.
 
-This downloads data directly from Overture's S3 bucket without interacting with any other servers. 
-By including bounding box extents on each row in the Overture distribution, the underlying Parquet
-readers use the Parquet summary statistics to download the minimum amount of data
-necessary to extract data from the desired region.
 
-To help find bounding boxes of interest, we like this [bounding box tool](https://boundingbox.klokantech.com/)
-from [Klokantech](https://www.klokantech.com/). Choose the CSV format and copy the value directly into
-the `--bbox` field here.
+This command downloads data directly from Overture's S3 bucket without interacting with any other servers. By including bounding box extents on each row in the Overture distribution, the underlying Parquet readers use the Parquet summary statistics to download the minimum amount of data necessary to extract data from the desired region.
+
+To help find bounding boxes of interest, we recommend this [bounding box tool](https://boundingbox.klokantech.com/) from [Klokantech](https://www.klokantech.com/). Choose the CSV format and copy the value directly into the `--bbox` field.
+
 
 
 ## Installation

@@ -120,7 +120,12 @@ def list_releases():
     required=False,
     help="Specify the release version to download. If not provided, the latest release will be used.",
 )
-def download(bbox, output_format, output, type_, release):
+@click.option(
+    "--include-release-in-filename/--no-include-release-in-filename",
+    default=True,
+    help="Whether to include the release version in the output filename. Default is to include it.",
+)
+def download(bbox, output_format, output, type_, release, include_release_in_filename):
     # Fetch the release information
     releases = get_releases()
     if release is None:
@@ -131,13 +136,16 @@ def download(bbox, output_format, output, type_, release):
         )
         return
 
-    # Modify the output filename to include the release version
+    # Modify the output filename to include the release version if specified
     if output is None:
         output = sys.stdout
     else:
         root, ext = os.path.splitext(output)
-        output = f"{root}_{release}{ext}"
-
+        if include_release_in_filename:
+            output = f"{root}_{release}{ext}"
+        else:
+            output = f"{root}{ext}"
+    
     reader = record_batch_reader(type_, bbox, release)
     if reader is None:
         return
