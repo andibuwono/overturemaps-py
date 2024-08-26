@@ -5,6 +5,7 @@ Currently provides the ability to extract features from an Overture dataset in a
 specified bounding box in a few different file formats.
 
 """
+
 import json
 import os
 import sys
@@ -18,7 +19,7 @@ import pyarrow.fs as fs
 import pyarrow.parquet as pq
 import shapely.wkb
 
-from . core import record_batch_reader, get_all_overture_types
+from .core import record_batch_reader, get_all_overture_types, get_releases
 
 
 def get_writer(output_format, path, schema):
@@ -84,6 +85,18 @@ def cli():
 
 
 @cli.command()
+def list_releases():
+    """
+    List all available releases with the latest release highlighted.
+    """
+    releases = get_releases()
+    click.echo("Available Releases:")
+    for release in releases["releases"]:
+        prefix = "LATEST -> " if release == releases["latest"] else "          "
+        click.echo(f"{prefix}{release}")
+
+
+@cli.command()
 @click.option("--bbox", required=False, type=BboxParamType())
 @click.option(
     "-f",
@@ -99,11 +112,33 @@ def cli():
     type=click.Choice(get_all_overture_types()),
     required=True,
 )
-def download(bbox, output_format, output, type_):
+@click.option(
+    "-r",
+    "--release",
+    "release",
+    type=str,
+    required=False,
+    help="Specify the release version to download. If not provided, the latest release will be used.",
+)
+def download(bbox, output_format, output, type_, release):
+    # Fetch the release information
+    releases = get_releases()
+    if release is None:
+        release = releases["latest"]
+    elif release not in releases["releases"]:
+        click.echo(
+            f"Release {release} not found. Available releases are: {', '.join(releases['releases'])}"
+        )
+        return
+
+    # Modify the output filename to include the release version
     if output is None:
         output = sys.stdout
+    else:
+        root, ext = os.path.splitext(output)
+        output = f"{root}_{release}{ext}"
 
-    reader = record_batch_reader(type_, bbox)
+    reader = record_batch_reader(type_, bbox, release)
     if reader is None:
         return
 
